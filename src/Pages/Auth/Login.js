@@ -46,9 +46,16 @@ const Login = () => {
 
     const { email, password } = values;
 
-    // Front-end validation safety check
+    // Front-end validation safety check (Empty fields)
     if (!email || !password) {
       toast.error("Please fill in all fields", toastOptions);
+      return;
+    }
+
+    // Front-end validation safety check (Email format)
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      toast.error("Please enter a valid email address.", toastOptions);
       return;
     }
 
