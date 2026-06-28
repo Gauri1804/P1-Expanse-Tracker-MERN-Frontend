@@ -139,12 +139,12 @@ const Home = () => {
 
 
 
-
   useEffect(() => {
     const fetchAllTransactions = async () => {
       try {
         setLoading(true);
         console.log(cUser._id, frequency, startDate, endDate, type);
+
         const { data } = await axios.post(getTransactions, {
           userId: cUser._id,
           frequency: frequency,
@@ -157,16 +157,15 @@ const Home = () => {
         setTransactions(data.transactions);
         setLoading(false);
       } catch (err) {
-        // toast.error("Error please Try again...", toastOptions);
         setLoading(false);
       }
     };
 
-    // ONLY fetch data if cUser has loaded and is ready!
     if (cUser && cUser._id) {
       fetchAllTransactions();
     }
-  }, [refresh, frequency, endDate, type, startDate, cUser.id, cUser]); // <--- Added cUser here to satisfy ESLint
+  }, [refresh, frequency, endDate, type, startDate, cUser?._id]); // <--- Change cUser to cUser?._id here
+
 
 
   const handleTableClick = (e) => {
