@@ -46,23 +46,42 @@ const Login = () => {
 
     const { email, password } = values;
 
-    setLoading(true);
+    // Front-end validation safety check
+    if (!email || !password) {
+      toast.error("Please fill in all fields", toastOptions);
+      return;
+    }
 
-    const { data } = await axios.post(loginAPI, {
-      email,
-      password,
-    });
+    try {
+      setLoading(true);
 
-    if (data.success === true) {
-      localStorage.setItem("user", JSON.stringify(data.user));
-      navigate("/");
-      toast.success(data.message, toastOptions);
-      setLoading(false);
-    } else {
-      toast.error(data.message, toastOptions);
+      const { data } = await axios.post(loginAPI, {
+        email,
+        password,
+      });
+
+      if (data.success === true) {
+        localStorage.setItem("user", JSON.stringify(data.user));
+        toast.success(data.message, toastOptions);
+        setValues({ email: "", password: "" }); // Clear inputs on success
+        navigate("/");
+      } else {
+        toast.error(data.message || "Login failed", toastOptions);
+        setValues({ email: "", password: "" }); // Clear inputs on custom fail
+      }
+    } catch (err) {
+      console.error("Login API Error:", err);
+
+      const serverMessage = err.response?.data?.message || "Invalid email or password.";
+      toast.error(serverMessage, toastOptions);
+
+      // Clear inputs when the server throws an explicit error code (401, 400, etc.)
+      setValues({ email: "", password: "" });
+    } finally {
       setLoading(false);
     }
   };
+
 
   const particlesInit = useCallback(async (engine) => {
     // console.log(engine);
