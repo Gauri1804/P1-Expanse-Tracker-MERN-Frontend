@@ -17,7 +17,7 @@ const Register = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if(localStorage.getItem('user')){
+    if (localStorage.getItem('user')) {
       navigate('/');
     }
   }, [navigate]);
@@ -32,9 +32,9 @@ const Register = () => {
   }, []);
 
   const [values, setValues] = useState({
-    name : "",
-    email : "",
-    password : "",
+    name: "",
+    email: "",
+    password: "",
 
   });
 
@@ -50,147 +50,182 @@ const Register = () => {
   }
 
   const handleChange = (e) => {
-    setValues({...values , [e.target.name]: e.target.value});
+    setValues({ ...values, [e.target.name]: e.target.value });
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-      const {name, email, password} = values;
+    const { name, email, password } = values;
 
-      setLoading(false);
-     
-      const {data} = await axios.post(registerAPI, {
+    // 1. Validation check for empty fields
+    if (!name || !email || !password) {
+      toast.error("Please fill in all fields", toastOptions);
+      return;
+    }
+
+    // 2. Validation check for proper email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      toast.error("Please enter a valid email address.", toastOptions);
+      return;
+    }
+
+    // 3. Validation check for strong password
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+    if (!passwordRegex.test(password)) {
+      toast.error(
+        "Password must be at least 8 characters long and contain an uppercase letter, a lowercase letter, and a number.",
+        toastOptions
+      );
+      return;
+    }
+
+    try {
+      setLoading(true); // Fixed: Start loading spinner
+
+      const { data } = await axios.post(registerAPI, {
         name,
         email,
         password
       });
 
-      if(data.success === true){
+      if (data.success === true) {
         delete data.user.password;
         localStorage.setItem("user", JSON.stringify(data.user));
         toast.success(data.message, toastOptions);
-        setLoading(true);
+        setValues({ name: "", email: "", password: "" }); // Wipes inputs on success
         navigate("/");
+      } else {
+        toast.error(data.message || "Registration failed", toastOptions);
+        setValues({ name: "", email: "", password: "" }); // Wipes inputs on custom fail
       }
-      else{
-        toast.error(data.message, toastOptions);
-        setLoading(false);
-      }
-    };
+    } catch (err) {
+      console.error("Register API Error:", err);
+
+      const serverMessage = err.response?.data?.message || "Registration failed. Try again.";
+      toast.error(serverMessage, toastOptions);
+
+      // Wipes input textboxes when the backend errors out (e.g., Email already exists)
+      setValues({ name: "", email: "", password: "" });
+    } finally {
+      setLoading(false); // Fixed: Safely turns off spinner in all outcome paths
+    }
+  };
+
 
   return (
     <>
-    <div style={{ position: 'relative', overflow: 'hidden' }}>
-      <Particles
-        id="tsparticles"
-        init={particlesInit}
-        loaded={particlesLoaded}
-        options={{
-          background: {
-            color: {
-              value: '#000',
-            },
-          },
-          fpsLimit: 60,
-          particles: {
-            number: {
-              value: 200,
-              density: {
-                enable: true,
-                value_area: 800,
+      <div style={{ position: 'relative', overflow: 'hidden' }}>
+        <Particles
+          id="tsparticles"
+          init={particlesInit}
+          loaded={particlesLoaded}
+          options={{
+            background: {
+              color: {
+                value: '#000',
               },
             },
-            color: {
-              value: '#ffcc00',
-            },
-            shape: {
-              type: 'circle',
-            },
-            opacity: {
-              value: 0.5,
-              random: true,
-            },
-            size: {
-              value: 3,
-              random: { enable: true, minimumValue: 1 },
-            },
-            links: {
-              enable: false,
-            },
-            move: {
-              enable: true,
-              speed: 2,
-            },
-            life: {
-              duration: {
-                sync: false,
-                value: 3,
-              },
-              count: 0,
-              delay: {
-                random: {
+            fpsLimit: 60,
+            particles: {
+              number: {
+                value: 200,
+                density: {
                   enable: true,
-                  minimumValue: 0.5,
+                  value_area: 800,
                 },
-                value: 1,
+              },
+              color: {
+                value: '#ffcc00',
+              },
+              shape: {
+                type: 'circle',
+              },
+              opacity: {
+                value: 0.5,
+                random: true,
+              },
+              size: {
+                value: 3,
+                random: { enable: true, minimumValue: 1 },
+              },
+              links: {
+                enable: false,
+              },
+              move: {
+                enable: true,
+                speed: 2,
+              },
+              life: {
+                duration: {
+                  sync: false,
+                  value: 3,
+                },
+                count: 0,
+                delay: {
+                  random: {
+                    enable: true,
+                    minimumValue: 0.5,
+                  },
+                  value: 1,
+                },
               },
             },
-          },
-          detectRetina: true,
-        }}
-        style={{
-          position: 'absolute',
-          zIndex: -1,
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-        }}
-      />
+            detectRetina: true,
+          }}
+          style={{
+            position: 'absolute',
+            zIndex: -1,
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+          }}
+        />
 
-      <Container className="mt-5" style={{position: 'relative', zIndex: "2 !important", color:"white !important"}}>
-      <Row>
-        <h1 className="text-center">
-          <AccountBalanceWalletIcon sx={{ fontSize: 40, color: "white"}}  className="text-center" />
-        </h1>
-        <h1 className="text-center text-white">Welcome to Expense Management System</h1>
-        <Col md={{ span: 6, offset: 3 }}>
-          <h2 className="text-white text-center mt-5" >Registration</h2>
-          <Form>
-            <Form.Group controlId="formBasicName" className="mt-3" >
-              <Form.Label className="text-white">Name</Form.Label>
-              <Form.Control type="text"  name="name" placeholder="Full name" value={values.name} onChange={handleChange} />
-            </Form.Group>
-            <Form.Group controlId="formBasicEmail" className="mt-3">
-              <Form.Label className="text-white">Email address</Form.Label>
-              <Form.Control type="email"  name="email" placeholder="Enter email" value={values.email} onChange={handleChange}/>
-            </Form.Group>
+        <Container className="mt-5" style={{ position: 'relative', zIndex: "2 !important", color: "white !important" }}>
+          <Row>
+            <h1 className="text-center">
+              <AccountBalanceWalletIcon sx={{ fontSize: 40, color: "white" }} className="text-center" />
+            </h1>
+            <h1 className="text-center text-white">Welcome to Expense Management System</h1>
+            <Col md={{ span: 6, offset: 3 }}>
+              <h2 className="text-white text-center mt-5" >Registration</h2>
+              <Form>
+                <Form.Group controlId="formBasicName" className="mt-3" >
+                  <Form.Label className="text-white">Name</Form.Label>
+                  <Form.Control type="text" name="name" placeholder="Full name" value={values.name} onChange={handleChange} />
+                </Form.Group>
+                <Form.Group controlId="formBasicEmail" className="mt-3">
+                  <Form.Label className="text-white">Email address</Form.Label>
+                  <Form.Control type="email" name="email" placeholder="Enter email" value={values.email} onChange={handleChange} />
+                </Form.Group>
 
-            <Form.Group controlId="formBasicPassword" className="mt-3">
-              <Form.Label className="text-white">Password</Form.Label>
-              <Form.Control type="password"  name="password" placeholder="Password" value={values.password} onChange={handleChange} />
-            </Form.Group>
-            <div style={{width: "100%", display: "flex" , alignItems:"center", justifyContent:"center", flexDirection: "column"}} className="mt-4">
-              <Link to="/forgotPassword" className="text-white lnk" >Forgot Password?</Link>
+                <Form.Group controlId="formBasicPassword" className="mt-3">
+                  <Form.Label className="text-white">Password</Form.Label>
+                  <Form.Control type="password" name="password" placeholder="Password" value={values.password} onChange={handleChange} />
+                </Form.Group>
+                <div style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column" }} className="mt-4">
+                  <Link to="/forgotPassword" className="text-white lnk" >Forgot Password?</Link>
 
-              <Button
-                  type="submit"
-                  className=" text-center mt-3 btnStyle"
-                  onClick={!loading ? handleSubmit : null}
-                  disabled={loading}
-                >
-                  {loading ? "Registering..." : "Signup"}
-                </Button>
+                  <Button
+                    type="submit"
+                    className=" text-center mt-3 btnStyle"
+                    onClick={!loading ? handleSubmit : null}
+                    disabled={loading}
+                  >
+                    {loading ? "Registering..." : "Signup"}
+                  </Button>
 
-              <p className="mt-3" style={{color: "#9d9494"}}>Already have an account? <Link to="/login" className="text-white lnk" >Login</Link></p>
-            </div>
-          </Form>
-        </Col>
-      </Row>
-    <ToastContainer />
-    </Container>
-    </div>
+                  <p className="mt-3" style={{ color: "#9d9494" }}>Already have an account? <Link to="/login" className="text-white lnk" >Login</Link></p>
+                </div>
+              </Form>
+            </Col>
+          </Row>
+          <ToastContainer />
+        </Container>
+      </div>
     </>
   )
 }
