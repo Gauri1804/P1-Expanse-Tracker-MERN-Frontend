@@ -138,11 +138,9 @@ const Home = () => {
   };
 
 
-  
 
 
   useEffect(() => {
-
     const fetchAllTransactions = async () => {
       try {
         setLoading(true);
@@ -155,9 +153,8 @@ const Home = () => {
           type: type,
         });
         console.log(data);
-  
+
         setTransactions(data.transactions);
-  
         setLoading(false);
       } catch (err) {
         // toast.error("Error please Try again...", toastOptions);
@@ -165,8 +162,12 @@ const Home = () => {
       }
     };
 
-    fetchAllTransactions();
-  }, [refresh, frequency, endDate, type, startDate]);
+    // ONLY fetch data if cUser has loaded and is ready!
+    if (cUser && cUser._id) {
+      fetchAllTransactions();
+    }
+  }, [refresh, frequency, endDate, type, startDate, cUser]); // <--- Added cUser here to satisfy ESLint
+
 
   const handleTableClick = (e) => {
     setView("table");
@@ -226,16 +227,14 @@ const Home = () => {
                 <FormatListBulletedIcon
                   sx={{ cursor: "pointer" }}
                   onClick={handleTableClick}
-                  className={`${
-                    view === "table" ? "iconActive" : "iconDeactive"
-                  }`}
+                  className={`${view === "table" ? "iconActive" : "iconDeactive"
+                    }`}
                 />
                 <BarChartIcon
                   sx={{ cursor: "pointer" }}
                   onClick={handleChartClick}
-                  className={`${
-                    view === "chart" ? "iconActive" : "iconDeactive"
-                  }`}
+                  className={`${view === "chart" ? "iconActive" : "iconDeactive"
+                    }`}
                 />
               </div>
 
