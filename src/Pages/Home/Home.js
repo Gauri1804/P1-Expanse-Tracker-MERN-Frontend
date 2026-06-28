@@ -166,7 +166,7 @@ const Home = () => {
     if (cUser && cUser._id) {
       fetchAllTransactions();
     }
-  }, [refresh, frequency, endDate, type, startDate, cUser]); // <--- Added cUser here to satisfy ESLint
+  }, [refresh, frequency, endDate, type, startDate, cUser.id, cUser]); // <--- Added cUser here to satisfy ESLint
 
 
   const handleTableClick = (e) => {
